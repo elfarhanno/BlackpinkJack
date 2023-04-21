@@ -10,6 +10,13 @@ var hidden;
 var deck = [];
 
 var canHit = true; //allows player to draw when yourSum <= 21
+const audio = document.getElementById("audioPlayer");
+
+var wins = 0;
+var losses = 0;
+var draws = 0;
+
+/*---------------------------------------------*/
 
 window.onload = function () {
   buildDeck();
@@ -100,13 +107,16 @@ function hit() {
   document.getElementById("your-cards").append(cardImg);
   console.log("your Sum: " + yourSum);
   document.getElementById("your-sum").innerText = yourSum;
+
+  if (reduceAce(yourSum, yourAceCount) > 21) {
+    canHit = false;
+  }
+
   if (yourSum > 21) {
     stay();
+  } else {
+    canHit = true;
   }
-}
-
-if (reduceAce(yourSum, yourAceCount) > 21) {
-  canHit = false;
 }
 
 // to consider the presence of Aces to be counted as 1
@@ -116,22 +126,36 @@ function stay() {
 
   canHit = false;
   document.getElementById("hidden").src = "./cards/" + hidden + ".png";
+  updateScoreboard();
+}
 
+function updateScoreboard() {
   let message = "";
-  if (yourSum > 21) {
+  if (yourSum == 21) {
+    message = "BLACKJACK! You win!! Restart to play again!";
+    wins += 1;
+  } else if (yourSum > 21) {
     message = "Busted! You Lose! Restart to play again!";
+    losses += 1;
   } else if (dealerSum > 21) {
     message = "Dealer busted! You win! Restart to play again!";
+    wins += 1;
   } else if (yourSum == dealerSum) {
     message = "TIE! Restart to play again!";
+    draws += 1;
   } else if (yourSum < dealerSum) {
     message = "You Lose! Restart to play again!";
+    losses += 1;
   } else if (yourSum > dealerSum) {
     message = "You Win! Restart to play again!";
+    wins += 1;
   }
   document.getElementById("dealer-sum").innerText = dealerSum;
   document.getElementById("your-sum").innerText = yourSum;
   document.getElementById("results").innerText = message;
+  document.getElementById("wins").innerText = wins;
+  document.getElementById("draws").innerText = draws;
+  document.getElementById("losses").innerText = losses;
 }
 
 // to get the numbered value for each card
@@ -167,20 +191,23 @@ function reduceAce(playerSum, playerAceCount) {
 }
 
 //to restart game
-document.getElementById("restart").addEventListener("click", function () {
+function restart() {
   dealerSum = 0;
   yourSum = 0;
   dealerAceCount = 0;
   yourAceCount = 0;
-  hidden;
-  deck = [];
   canHit = true;
+  deck = [];
   buildDeck();
   shuffleDeck();
-  document.getElementById("dealer-cards").innerHTML = "";
-  document.getElementById("your-cards").innerHTML = "";
   document.getElementById("dealer-sum").innerText = "";
+  document.getElementById("dealer-cards").innerHTML =
+    '<img id="hidden" src="./cards/Back.png" />';
   document.getElementById("your-sum").innerText = "";
+  document.getElementById("your-cards").innerHTML = "";
   document.getElementById("results").innerText = "";
+  document.getElementById("wins").innerText = wins;
+  document.getElementById("losses").innerText = losses;
+  document.getElementById("draws").innerText = draws;
   startGame();
-});
+}
